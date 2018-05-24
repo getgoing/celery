@@ -6,14 +6,13 @@ import numbers
 import os
 import sys
 import time as _time
-
 from calendar import monthrange
 from datetime import date, datetime, timedelta, tzinfo
 
 from kombu.utils.functional import reprcall
 from kombu.utils.objects import cached_property
-
-from pytz import timezone as _timezone, AmbiguousTimeError, FixedOffset
+from pytz import AmbiguousTimeError, FixedOffset
+from pytz import timezone as _timezone
 
 from celery.five import python_2_unicode_compatible, string_t
 
@@ -360,7 +359,7 @@ class ffwd(object):
         month = self.month or other.month
         day = min(monthrange(year, month)[1], self.day or other.day)
         ret = other.replace(**dict(dictfilter(self._fields()),
-                            year=year, month=month, day=day))
+                                   year=year, month=month, day=day))
         if self.weekday is not None:
             ret += timedelta(days=(7 - ret.weekday() + self.weekday) % 7)
         return ret + timedelta(days=self.days)

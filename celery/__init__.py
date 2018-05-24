@@ -14,7 +14,7 @@ from collections import namedtuple
 
 SERIES = 'latentcall'
 
-__version__ = '4.1.0'
+__version__ = '4.1.1'
 __author__ = 'Ask Solem'
 __contact__ = 'ask@celeryproject.org'
 __homepage__ = 'http://celeryproject.org'
@@ -144,6 +144,7 @@ def maybe_patch_concurrency(argv=sys.argv,
         # set up eventlet/gevent environments ASAP
         from celery import concurrency
         concurrency.get_implementation(pool)
+
 
 # Lazy loading
 from . import local  # noqa

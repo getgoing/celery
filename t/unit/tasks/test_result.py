@@ -1,28 +1,19 @@
 from __future__ import absolute_import, unicode_literals
 
-import pytest
 import traceback
-
 from contextlib import contextmanager
 
+import pytest
 from case import Mock, call, patch, skip
 
-from celery import uuid
-from celery import states
+from celery import states, uuid
 from celery.backends.base import SyncBackendMixin
-from celery.exceptions import (
-    CPendingDeprecationWarning, ImproperlyConfigured,
-    IncompleteStream, TimeoutError,
-)
+from celery.exceptions import (CPendingDeprecationWarning,
+                               ImproperlyConfigured, IncompleteStream,
+                               TimeoutError)
 from celery.five import range
-from celery.result import (
-    AsyncResult,
-    EagerResult,
-    ResultSet,
-    GroupResult,
-    result_from_tuple,
-    assert_will_not_block,
-)
+from celery.result import (AsyncResult, EagerResult, GroupResult, ResultSet,
+                           assert_will_not_block, result_from_tuple)
 from celery.utils.serialization import pickle
 
 PYTRACEBACK = """\
@@ -543,17 +534,17 @@ class MockAsyncResultSuccess(AsyncResult):
 
 
 class SimpleBackend(SyncBackendMixin):
-        ids = []
+    ids = []
 
-        def __init__(self, ids=[]):
-            self.ids = ids
+    def __init__(self, ids=[]):
+        self.ids = ids
 
-        def _ensure_not_eager(self):
-            pass
+    def _ensure_not_eager(self):
+        pass
 
-        def get_many(self, *args, **kwargs):
-            return ((id, {'result': i, 'status': states.SUCCESS})
-                    for i, id in enumerate(self.ids))
+    def get_many(self, *args, **kwargs):
+        return ((id, {'result': i, 'status': states.SUCCESS})
+                for i, id in enumerate(self.ids))
 
 
 class test_GroupResult:

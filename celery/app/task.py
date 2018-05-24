@@ -8,8 +8,7 @@ from billiard.einfo import ExceptionInfo
 from kombu.exceptions import OperationalError
 from kombu.utils.uuid import uuid
 
-from celery import current_app, group
-from celery import states
+from celery import current_app, group, states
 from celery._state import _task_stack
 from celery.canvas import signature
 from celery.exceptions import Ignore, MaxRetriesExceededError, Reject, Retry
@@ -1006,4 +1005,6 @@ class Task(object):
     @property
     def __name__(self):
         return self.__class__.__name__
+
+
 BaseTask = Task  # noqa: E305 XXX compat alias

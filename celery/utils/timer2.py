@@ -3,20 +3,21 @@
 
 .. note::
     This is used for the thread-based worker only,
-    not for amqp/redis/sqs/qpid where :mod:`kombu.async.timer` is used.
+    not for amqp/redis/sqs/qpid where :mod:`kombu.asynchronous.timer` is used.
 """
 from __future__ import absolute_import, print_function, unicode_literals
 
 import os
 import sys
 import threading
-
 from itertools import count
 from time import sleep
 
-from celery.five import THREAD_TIMEOUT_MAX
+from kombu.asynchronous.timer import Entry
+from kombu.asynchronous.timer import Timer as Schedule
+from kombu.asynchronous.timer import logger, to_timestamp
 
-from kombu.async.timer import Entry, Timer as Schedule, to_timestamp, logger
+from celery.five import THREAD_TIMEOUT_MAX
 
 TIMER_DEBUG = os.environ.get('TIMER_DEBUG')
 

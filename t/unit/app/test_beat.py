@@ -1,14 +1,16 @@
 from __future__ import absolute_import, unicode_literals
+
 import errno
-import pytest
 from datetime import datetime, timedelta
 from pickle import dumps, loads
+
+import pytest
 from case import Mock, call, patch, skip
-from celery import beat
-from celery import uuid
+
+from celery import beat, uuid
 from celery.beat import event_t
 from celery.five import keys, string_t
-from celery.schedules import schedule, crontab
+from celery.schedules import crontab, schedule
 from celery.utils.objects import Bunch
 
 
@@ -310,7 +312,7 @@ class test_Scheduler:
         scheduler = mScheduler(app=self.app)
         nums = [600, 300, 650, 120, 250, 36]
         s = dict(('test_ticks%s' % i,
-                 {'schedule': mocked_schedule(False, j)})
+                  {'schedule': mocked_schedule(False, j)})
                  for i, j in enumerate(nums))
         scheduler.update_from_dict(s)
         assert scheduler.tick() == min(nums) - 0.010

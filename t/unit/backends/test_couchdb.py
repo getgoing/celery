@@ -1,10 +1,13 @@
 from __future__ import absolute_import, unicode_literals
+
 import pytest
 from case import MagicMock, Mock, sentinel, skip
+
 from celery.app import backends
 from celery.backends import couchdb as module
 from celery.backends.couchdb import CouchBackend
 from celery.exceptions import ImproperlyConfigured
+
 try:
     import pycouchdb
 except ImportError:
@@ -30,10 +33,10 @@ class test_CouchBackend:
             module.pycouchdb = prev
 
     def test_get_container_exists(self):
-            self.backend._connection = sentinel._connection
-            connection = self.backend.connection
-            assert connection is sentinel._connection
-            self.Server.assert_not_called()
+        self.backend._connection = sentinel._connection
+        connection = self.backend.connection
+        assert connection is sentinel._connection
+        self.Server.assert_not_called()
 
     def test_get(self):
         """test_get
