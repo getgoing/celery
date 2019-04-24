@@ -43,6 +43,7 @@ class Events(bootsteps.StartStopStep):
             # we currently only buffer events when the event loop is enabled
             # XXX This excludes eventlet/gevent, which should actually buffer.
             buffer_group=['task'] if c.hub else None,
+            buffer_while_offline=False,
             on_send_buffered=c.on_send_event_buffered if c.hub else None,
         )
         if prev:
