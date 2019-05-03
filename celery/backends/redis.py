@@ -52,10 +52,11 @@ class ResultConsumer(async.BaseResultConsumer):
         self.subscribed_to = set()
         self.subscribe_lock = threading.Lock()
 
-    def start(self, **kwargs):
+    def start(self, initial_task_id, **kwargs):
         self._pubsub = self.backend.client.pubsub(
             ignore_subscribe_messages=True,
         )
+        self._consume_from(initial_task_id)
 
     def on_wait_for_pending(self, result, **kwargs):
         for meta in result._iter_meta():
@@ -73,7 +74,7 @@ class ResultConsumer(async.BaseResultConsumer):
 
     def consume_from(self, task_id):
         if self._pubsub is None:
-            return self.start()
+            return self.start(task_id)
         self._consume_from(task_id)
 
     def _consume_from(self, task_id):
