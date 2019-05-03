@@ -79,16 +79,16 @@ class ResultConsumer(async.BaseResultConsumer):
 
     def _consume_from(self, task_id):
         key = self._get_key_for_task(task_id)
-        with self._subscribe_lock:
-            if key not in self.subscribed_to:
-                self.subscribed_to.add(key)
+        if key not in self.subscribed_to:
+            self.subscribed_to.add(key)
+            with self._subscribe_lock:
                 self._pubsub.subscribe(key)
 
     def cancel_for(self, task_id):
         if self._pubsub:
             key = self._get_key_for_task(task_id)
+            self.subscribed_to.discard(key)
             with self._subscribe_lock:
-                self.subscribed_to.discard(key)
                 self._pubsub.unsubscribe(key)
 
 
