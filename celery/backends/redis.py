@@ -44,13 +44,13 @@ logger = get_logger(__name__)
 class ResultConsumer(async.BaseResultConsumer):
 
     _pubsub = None
+    _subscribe_lock = threading.Lock()
 
     def __init__(self, *args, **kwargs):
         super(ResultConsumer, self).__init__(*args, **kwargs)
         self._get_key_for_task = self.backend.get_key_for_task
         self._decode_result = self.backend.decode_result
         self.subscribed_to = set()
-        self.subscribe_lock = threading.Lock()
 
     def start(self, initial_task_id, **kwargs):
         self._pubsub = self.backend.client.pubsub(
@@ -79,7 +79,7 @@ class ResultConsumer(async.BaseResultConsumer):
 
     def _consume_from(self, task_id):
         key = self._get_key_for_task(task_id)
-        with self.subscribe_lock:
+        with self._subscribe_lock:
             if key not in self.subscribed_to:
                 self.subscribed_to.add(key)
                 self._pubsub.subscribe(key)
@@ -87,7 +87,7 @@ class ResultConsumer(async.BaseResultConsumer):
     def cancel_for(self, task_id):
         if self._pubsub:
             key = self._get_key_for_task(task_id)
-            with self.subscribe_lock:
+            with self._subscribe_lock:
                 self.subscribed_to.discard(key)
                 self._pubsub.unsubscribe(key)
 
