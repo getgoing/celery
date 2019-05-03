@@ -2,6 +2,8 @@
 """Redis result store backend."""
 from __future__ import absolute_import, unicode_literals
 
+import threading
+
 from functools import partial
 
 from kombu.utils.functional import retry_over_time
@@ -48,12 +50,12 @@ class ResultConsumer(async.BaseResultConsumer):
         self._get_key_for_task = self.backend.get_key_for_task
         self._decode_result = self.backend.decode_result
         self.subscribed_to = set()
+        self.subscribe_lock = threading.Lock()
 
-    def start(self, initial_task_id, **kwargs):
+    def start(self, **kwargs):
         self._pubsub = self.backend.client.pubsub(
             ignore_subscribe_messages=True,
         )
-        self._consume_from(initial_task_id)
 
     def on_wait_for_pending(self, result, **kwargs):
         for meta in result._iter_meta():
@@ -71,20 +73,22 @@ class ResultConsumer(async.BaseResultConsumer):
 
     def consume_from(self, task_id):
         if self._pubsub is None:
-            return self.start(task_id)
+            return self.start()
         self._consume_from(task_id)
 
     def _consume_from(self, task_id):
         key = self._get_key_for_task(task_id)
-        if key not in self.subscribed_to:
-            self.subscribed_to.add(key)
-            self._pubsub.subscribe(key)
+        with self.subscribe_lock:
+            if key not in self.subscribed_to:
+                self.subscribed_to.add(key)
+                self._pubsub.subscribe(key)
 
     def cancel_for(self, task_id):
         if self._pubsub:
             key = self._get_key_for_task(task_id)
-            self.subscribed_to.discard(key)
-            self._pubsub.unsubscribe(key)
+            with self.subscribe_lock:
+                self.subscribed_to.discard(key)
+                self._pubsub.unsubscribe(key)
 
 
 class RedisBackend(base.BaseKeyValueStoreBackend, async.AsyncBackendMixin):
