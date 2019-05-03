@@ -2,6 +2,8 @@
 """Redis result store backend."""
 from __future__ import absolute_import, unicode_literals
 
+import threading
+
 from functools import partial
 
 from kombu.utils.functional import retry_over_time
@@ -42,6 +44,7 @@ logger = get_logger(__name__)
 class ResultConsumer(async.BaseResultConsumer):
 
     _pubsub = None
+    _subscribe_lock = threading.Lock()
 
     def __init__(self, *args, **kwargs):
         super(ResultConsumer, self).__init__(*args, **kwargs)
@@ -78,13 +81,15 @@ class ResultConsumer(async.BaseResultConsumer):
         key = self._get_key_for_task(task_id)
         if key not in self.subscribed_to:
             self.subscribed_to.add(key)
-            self._pubsub.subscribe(key)
+            with self._subscribe_lock:
+                self._pubsub.subscribe(key)
 
     def cancel_for(self, task_id):
         if self._pubsub:
             key = self._get_key_for_task(task_id)
             self.subscribed_to.discard(key)
-            self._pubsub.unsubscribe(key)
+            with self._subscribe_lock:
+                self._pubsub.unsubscribe(key)
 
 
 class RedisBackend(base.BaseKeyValueStoreBackend, async.AsyncBackendMixin):
